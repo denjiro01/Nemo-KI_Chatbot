@@ -1,62 +1,66 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Nur POST-Anfragen erlaubt" });
-  }
+  if (req.method !== "POST") return res.status(405).end("Only POST allowed");
 
-  try {
-    const { model, messages } = req.body;
+  const { messages } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: "Keine oder ungültige Nachrichten vorhanden" });
-    }
+  const systemMessage = {
+    role: "system",
+    content:
+      "Du bist ein hilfreicher, freundlicher deutscher KI-Assistent. Bevor du antwortest, denke laut im Format <think>Deine Gedanken hier</think> nach. Danach gib deine eigentliche Antwort.",
+  };
 
-    // Setze System-Message, falls noch nicht vorhanden
-    const systemMessage = {
-      role: "system",
-      content: "Du bist ein hilfreicher, freundlicher deutscher Assistent.",
-    };
+  const fullMessages = [
+    ...(messages[0]?.role === "system" ? [] : [systemMessage]),
+    ...messages,
+  ];
 
-    const fullMessages = messages.some(m => m.role === "system")
-      ? messages
-      : [systemMessage, ...messages];
+  // Modelle in Reihenfolge der Priorität
+  const modelFallbacks = [
+    "deepseek/deepseek-chat-v3-0324:free",
+    "deepseek/deepseek-chat-r1-0528:free",
+  ];
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: model || "deepseek/deepseek-chat-v3-0324:free",
-        messages: fullMessages,
-      }),
-    });
+  let lastError = null;
 
-    // 429 Fehler speziell behandeln und weitergeben
-    if (response.status === 429) {
-  return res.status(200).json({
-    choices: [{
-      message: {
-        content: "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen."
+  for (const model of modelFallbacks) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + process.env.OPENROUTER_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: fullMessages,
+        }),
+      });
+
+      if (response.status === 429) {
+        return res.status(429).json({
+          choices: [{
+            message: {
+              content: "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen oder lade Guthaben auf unter https://openrouter.ai/wallet.",
+            }
+          }]
+        });
       }
-    }]
-  });
-}
 
+      if (!response.ok) {
+        lastError = `Modell ${model} fehlgeschlagen: ${response.status}`;
+        continue;
+      }
 
-    // Andere Fehler abfangen
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Fehler von OpenRouter:", response.status, errorText);
-      return res.status(response.status).json({ error: errorText });
+      const result = await response.json();
+      return res.status(200).json(result);
+
+    } catch (err) {
+      lastError = `Modell ${model} hat folgenden Fehler geworfen: ${err.message}`;
     }
-
-    // Antwort normal weiterleiten
-    const data = await response.json();
-    res.status(200).json(data);
-
-  } catch (error) {
-    console.error("Interner Serverfehler:", error);
-    res.status(500).json({ error: error.message || "Unbekannter Serverfehler" });
   }
+
+  return res.status(500).json({
+    error: "❌ Alle Modelle fehlgeschlagen.",
+    detail: lastError,
+  });
 }
