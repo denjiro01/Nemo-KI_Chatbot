@@ -34,14 +34,15 @@ export default async function handler(req, res) {
 
     // 429 Fehler speziell behandeln und weitergeben
     if (response.status === 429) {
-      return res.status(429).json({
-        choices: [{
-          message: {
-            content: "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen oder lade Guthaben auf unter https://openrouter.ai/wallet."
-          }
-        }]
-      });
-    }
+  return res.status(200).json({
+    choices: [{
+      message: {
+        content: "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen."
+      }
+    }]
+  });
+}
+
 
     // Andere Fehler abfangen
     if (!response.ok) {
