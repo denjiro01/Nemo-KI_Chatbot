@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Mein KI-Chatbot</title>
+  <title>Axi der Chatbot</title>
 </head>
 <body>
   <h1>Sprich mit mir</h1>
@@ -18,7 +18,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: [{ role: "user", content: input }],
-          model: "deepseek-chat",
+          model: "DeepSeek: R1 0528 (free)",
         }),
       });
       const data = await res.json();
