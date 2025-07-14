@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nemo — Dein persönlicher KI-Chatbot</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap');
     * { box-sizing: border-box; }
@@ -43,6 +43,9 @@
       gap: 1rem;
       scrollbar-width: thin;
       scrollbar-color: #00fff7 #000000;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      color: #b3f9f7;
     }
     .chat-messages::-webkit-scrollbar {
       width: 8px;
@@ -87,30 +90,34 @@
       position: relative;
       box-shadow: 0 0 6px #00fff7aa;
       animation: fadeIn 0.5s ease forwards;
-      word-wrap: break-word;
     }
     .message.user {
-      background: #002233;
+      background: linear-gradient(135deg, #002233, #004466);
       align-self: flex-end;
       border-bottom-right-radius: 4px;
-      color: #00fff7;
+      color: #7defff;
+      box-shadow: 0 0 10px #00c4c1cc;
       text-shadow: 0 0 2px #00fff7aa;
     }
     .message.bot {
-      background: #004455;
+      background: linear-gradient(135deg, #004455, #006677);
       align-self: flex-start;
       border-bottom-left-radius: 4px;
-      color: #aaffff;
+      color: #d1faff;
+      box-shadow: 0 0 10px #00fff7cc;
       text-shadow: 0 0 2px #aaffffaa;
     }
     .loading {
-      width: 24px;
-      height: 24px;
-      border: 3px solid transparent;
-      border-top: 3px solid #00fff7;
+      width: 32px;
+      height: 32px;
+      border: 4px solid transparent;
+      border-top: 4px solid #00fff7;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-left: 10px;
+      animation: spin 1.2s linear infinite;
+      margin-left: 15px;
+      filter: drop-shadow(0 0 5px #00fff7);
+      display: inline-block;
+      vertical-align: middle;
     }
     .input-area {
       display: flex;
@@ -130,30 +137,47 @@
       font-family: 'Roboto', sans-serif;
       background: #002233;
       color: #00fff7;
-      box-shadow: inset 0 0 10px #00fff7aa;
+      box-shadow: inset 0 0 15px #00fff7aa;
       outline: none;
       transition: box-shadow 0.3s ease;
       height: 3.5rem;
       line-height: 1.2;
     }
     textarea:focus {
-      box-shadow: 0 0 15px #00fff7;
+      box-shadow: 0 0 25px #00fff7;
     }
     button {
       margin-left: 1rem;
-      background: #00fff7;
+      background: linear-gradient(135deg, #00fff7, #00c4c1);
       border: none;
-      border-radius: 12px;
-      padding: 0 1.5rem;
+      border-radius: 20px;
+      padding: 0.5rem 1.2rem;
       font-size: 1.1rem;
       font-weight: 700;
       color: #001122;
       cursor: pointer;
       box-shadow: 0 0 15px #00fff7;
-      transition: background 0.3s ease;
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
     }
     button:hover {
-      background: #00c4c1;
+      box-shadow: 0 0 25px #00fff7ff;
+      transform: scale(1.05);
+    }
+    .toggle-btn {
+      margin-top: 0.7rem;
+      background: linear-gradient(135deg, #00fff7, #00c4c1);
+      color: #001122;
+      padding: 0.5rem 1rem;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #00fff7aa;
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    .toggle-btn:hover {
+      box-shadow: 0 0 25px #00fff7ff;
+      transform: scale(1.05);
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
@@ -161,6 +185,19 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeZoomIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .gedanken-visible {
+      animation: fadeZoomIn 0.3s ease forwards;
     }
   </style>
 </head>
@@ -202,7 +239,6 @@
     async function frageDeepSeek(text) {
       if (!text.trim()) return;
 
-      // Nutzernachricht anzeigen
       const userMsg = document.createElement('div');
       userMsg.classList.add('message', 'user');
       userMsg.textContent = text;
@@ -233,39 +269,22 @@
         const botMsg = document.createElement('div');
         botMsg.classList.add('message', 'bot');
 
-        // Alle <think>...</think> Blöcke extrahieren
-        const thinkRegex = /<think>([\s\S]*?)<\/think>/gi;
-        let match;
-        let gedankenTexte = [];
+        const thinkMatch = fullText.match(/<think>([\s\S]*?)<\/think>/i);
+        const sichtbarerText = fullText.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
 
-        let sichtbarerText = fullText;
-        while ((match = thinkRegex.exec(fullText)) !== null) {
-          gedankenTexte.push(match[1].trim());
-          sichtbarerText = sichtbarerText.replace(match[0], '');
-        }
-        sichtbarerText = sichtbarerText.trim();
-
-        // Sichtbaren Text mit Markdown parsen
         const antwortDiv = document.createElement('div');
         antwortDiv.innerHTML = marked.parse(sichtbarerText);
         Prism.highlightAll();
 
-        botMsg.appendChild(antwortDiv);
+        if (thinkMatch) {
+          const gedankenText = thinkMatch[1].trim();
 
-        // Gedanken-Bereich mit Button, wenn Gedanken vorhanden
-        if (gedankenTexte.length > 0) {
           const toggleBtn = document.createElement('button');
+          toggleBtn.classList.add('toggle-btn');
           toggleBtn.textContent = "🧠 Gedanken anzeigen";
-          toggleBtn.style.marginTop = "0.7rem";
-          toggleBtn.style.background = "#00c4c1";
-          toggleBtn.style.color = "#001122";
-          toggleBtn.style.padding = "0.4rem 0.8rem";
-          toggleBtn.style.fontSize = "0.9rem";
-          toggleBtn.style.border = "none";
-          toggleBtn.style.borderRadius = "8px";
-          toggleBtn.style.cursor = "pointer";
 
           const gedankenDiv = document.createElement('div');
+          gedankenDiv.textContent = gedankenText;
           gedankenDiv.style.display = "none";
           gedankenDiv.style.marginTop = "0.5rem";
           gedankenDiv.style.fontStyle = "italic";
@@ -273,23 +292,25 @@
           gedankenDiv.style.padding = "0.6rem 1rem";
           gedankenDiv.style.borderRadius = "12px";
           gedankenDiv.style.boxShadow = "inset 0 0 6px #00fff7aa";
-          gedankenDiv.style.whiteSpace = "pre-wrap";
-
-          gedankenTexte.forEach((text, i) => {
-            const p = document.createElement('p');
-            p.textContent = text;
-            if (i > 0) p.style.marginTop = "0.8rem";
-            gedankenDiv.appendChild(p);
-          });
 
           toggleBtn.onclick = () => {
             const sichtbar = gedankenDiv.style.display === "block";
-            gedankenDiv.style.display = sichtbar ? "none" : "block";
-            toggleBtn.textContent = sichtbar ? "🧠 Gedanken anzeigen" : "🧠 Gedanken ausblenden";
+            if (sichtbar) {
+              gedankenDiv.style.display = "none";
+              gedankenDiv.classList.remove("gedanken-visible");
+              toggleBtn.textContent = "🧠 Gedanken anzeigen";
+            } else {
+              gedankenDiv.style.display = "block";
+              gedankenDiv.classList.add("gedanken-visible");
+              toggleBtn.textContent = "🧠 Gedanken ausblenden";
+            }
           };
 
+          botMsg.appendChild(antwortDiv);
           botMsg.appendChild(toggleBtn);
           botMsg.appendChild(gedankenDiv);
+        } else {
+          botMsg.appendChild(antwortDiv);
         }
 
         chatMessages.appendChild(botMsg);
