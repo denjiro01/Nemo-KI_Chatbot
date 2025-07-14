@@ -260,14 +260,22 @@
           }),
         });
 
-        if (!response.ok) throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+        if (!response.ok) throw new Error(`HTTP-Fehler: ${response.status} ${response.statusText}`);
         const data = await response.json();
 
         removeLoading();
+        console.log("Antwort der API:", data);
 
-        const fullText = data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
+        const fullText = data?.choices?.[0]?.message?.content;
         const botMsg = document.createElement('div');
         botMsg.classList.add('message', 'bot');
+
+        if (!fullText) {
+          botMsg.textContent = "⚠️ Keine gültige Antwort erhalten.\n" + JSON.stringify(data, null, 2);
+          chatMessages.appendChild(botMsg);
+          scrollToBottom();
+          return;
+        }
 
         const thinkMatch = fullText.match(/<think>([\s\S]*?)<\/think>/i);
         const sichtbarerText = fullText.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
@@ -278,7 +286,6 @@
 
         if (thinkMatch) {
           const gedankenText = thinkMatch[1].trim();
-
           const toggleBtn = document.createElement('button');
           toggleBtn.classList.add('toggle-btn');
           toggleBtn.textContent = "🧠 Gedanken anzeigen";
@@ -315,12 +322,15 @@
 
         chatMessages.appendChild(botMsg);
         scrollToBottom();
+        userInput.value = '';
+        userInput.focus();
 
       } catch (error) {
         removeLoading();
+        console.error("Fehler beim Abrufen:", error);
         const errMsg = document.createElement('div');
         errMsg.classList.add('message', 'bot');
-        errMsg.textContent = "Fehler bei der Anfrage: " + error.message;
+        errMsg.textContent = "❌ Fehler bei der Anfrage: " + error.message;
         chatMessages.appendChild(errMsg);
         scrollToBottom();
       }
@@ -328,8 +338,6 @@
 
     sendBtn.addEventListener('click', () => {
       frageDeepSeek(userInput.value);
-      userInput.value = '';
-      userInput.focus();
     });
 
     userInput.addEventListener('keydown', e => {
