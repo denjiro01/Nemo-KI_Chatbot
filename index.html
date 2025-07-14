@@ -3,73 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KI Chatbot – Nemo</title>
+  <title>Fehlerfreier Nemo KI-Chat</title>
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f4f6f9;
       margin: 0;
-      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f0f2f5;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
+
     header {
-      background-color: #4a90e2;
+      background-color: #10a37f;
       color: white;
       padding: 1rem;
       text-align: center;
       font-size: 1.5rem;
     }
+
     #chatBox {
-      flex-grow: 1;
+      flex: 1;
       padding: 1rem;
       overflow-y: auto;
-      background: white;
-      border-top: 1px solid #ccc;
-      border-bottom: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
     }
+
     .nachricht {
-      margin-bottom: 1rem;
+      max-width: 80%;
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      border-radius: 12px;
+      white-space: pre-wrap;
     }
+
     .user {
+      background-color: #dafbe1;
+      align-self: flex-end;
       text-align: right;
-      color: #2c3e50;
     }
+
     .bot {
+      background-color: #e5e7eb;
+      align-self: flex-start;
       text-align: left;
-      color: #4a90e2;
     }
+
+    .fehler {
+      background-color: #ffe5e5;
+      color: #a10000;
+      align-self: center;
+      text-align: center;
+    }
+
     #eingabeContainer {
       display: flex;
-      padding: 0.5rem;
-      background: #f9f9f9;
+      padding: 1rem;
+      border-top: 1px solid #ddd;
+      background: white;
     }
+
     #userInput {
-      flex-grow: 1;
-      padding: 0.5rem;
-      font-size: 1rem;
+      flex: 1;
+      padding: 0.75rem;
       border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      margin-left: 0.5rem;
-      padding: 0.5rem 1rem;
+      border-radius: 8px;
       font-size: 1rem;
-      border: none;
-      border-radius: 4px;
-      background-color: #4a90e2;
+    }
+
+    button {
+      margin-left: 0.75rem;
+      padding: 0.75rem 1.25rem;
+      background-color: #10a37f;
       color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
       cursor: pointer;
     }
+
     button:disabled {
-      background-color: #9bbbd4;
+      background-color: #91cbb4;
       cursor: wait;
     }
   </style>
 </head>
 <body>
-  <header>🤖 Nemo KI-Chatbot</header>
+  <header>🤖 Nemo KI-Chat (Fehlerfrei)</header>
 
   <div id="chatBox"></div>
 
@@ -79,6 +100,7 @@
       id="userInput"
       placeholder="Frag mich etwas..."
       onkeydown="if(event.key === 'Enter') senden()"
+      autocomplete="off"
     />
     <button id="sendButton" onclick="senden()">Senden</button>
   </div>
@@ -87,42 +109,77 @@
     const chatBox = document.getElementById("chatBox");
     const input = document.getElementById("userInput");
     const button = document.getElementById("sendButton");
+    const proxyURL = "https://new-chatbot-olive.vercel.app/api/chat"; // ⚠️ HIER ANPASSEN
+
+    function zeigeNachricht(text, klasse = "bot") {
+      const msg = document.createElement("div");
+      msg.className = `nachricht ${klasse}`;
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function validiereEingabe(text) {
+      return typeof text === "string" && text.trim().length > 0;
+    }
 
     async function senden() {
       const frage = input.value.trim();
-      if (!frage) return;
+      if (!validiereEingabe(frage)) return;
 
-      zeigeNachricht("Du", frage, "user");
+      zeigeNachricht(frage, "user");
       input.value = "";
+      input.disabled = true;
       button.disabled = true;
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s Timeout
+
       try {
-        const res = await fetch("https://new-chatbot-olive.vercel.app/api/chat", {
+        const res = await fetch(proxyURL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "DeepSeek: R1 0528 (free)",
-            messages: [{ role: "user", content: frage }],
+            model: "DeepSeek: R1 0528 (free)", // ggf. anpassen
+            messages: [{ role: "user", content: frage }]
           }),
+          signal: controller.signal
         });
 
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+          zeigeNachricht(`⚠️ Fehler ${res.status}: ${res.statusText}`, "fehler");
+          return;
+        }
+
         const data = await res.json();
-console.log("Antwort der API:", data);
-        const antwort = data.choices?.[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
-        zeigeNachricht("Nemo", antwort, "bot");
-      } catch (error) {
-        zeigeNachricht("Fehler", "⚠️ Netzwerkproblem oder Proxy nicht erreichbar.", "bot");
+
+        if (data.error?.message) {
+          zeigeNachricht(`❌ API-Fehler: ${data.error.message}`, "fehler");
+          return;
+        }
+
+        const antwort = data.choices?.[0]?.message?.content;
+
+        if (!antwort || typeof antwort !== "string") {
+          zeigeNachricht("❌ Ungültige oder leere Antwort vom Modell.", "fehler");
+          return;
+        }
+
+        zeigeNachricht(antwort, "bot");
+
+      } catch (err) {
+        if (err.name === "AbortError") {
+          zeigeNachricht("⏱️ Zeitüberschreitung – keine Antwort erhalten.", "fehler");
+        } else {
+          zeigeNachricht("🌐 Netzwerkfehler – Proxy nicht erreichbar oder keine Internetverbindung.", "fehler");
+        }
+        console.error("Fehler:", err);
       } finally {
+        input.disabled = false;
         button.disabled = false;
       }
-    }
-
-    function zeigeNachricht(name, text, klasse) {
-      const div = document.createElement("div");
-      div.className = `nachricht ${klasse}`;
-      div.innerHTML = `<strong>${name}:</strong> ${text}`;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
     }
   </script>
 </body>
