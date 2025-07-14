@@ -2,27 +2,126 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Axi der Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KI Chatbot – Nemo</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #4a90e2;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    #chatBox {
+      flex-grow: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      background: white;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+    }
+    .nachricht {
+      margin-bottom: 1rem;
+    }
+    .user {
+      text-align: right;
+      color: #2c3e50;
+    }
+    .bot {
+      text-align: left;
+      color: #4a90e2;
+    }
+    #eingabeContainer {
+      display: flex;
+      padding: 0.5rem;
+      background: #f9f9f9;
+    }
+    #userInput {
+      flex-grow: 1;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-left: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #4a90e2;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #9bbbd4;
+      cursor: wait;
+    }
+  </style>
 </head>
 <body>
-  <h1>Sprich mit mir</h1>
-  <textarea id="chat" rows="10" cols="50" readonly></textarea><br>
-  <input type="text" id="userInput" placeholder="Frag mich etwas..." />
-  <button onclick="senden()">Senden</button>
+  <header>🤖 Nemo KI-Chatbot</header>
+
+  <div id="chatBox"></div>
+
+  <div id="eingabeContainer">
+    <input
+      type="text"
+      id="userInput"
+      placeholder="Frag mich etwas..."
+      onkeydown="if(event.key === 'Enter') senden()"
+    />
+    <button id="sendButton" onclick="senden()">Senden</button>
+  </div>
 
   <script>
+    const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("userInput");
+    const button = document.getElementById("sendButton");
+
     async function senden() {
-      const input = document.getElementById("userInput").value;
-      const res = await fetch("https://new-chatbot-olive.vercel.app/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [{ role: "user", content: input }],
-          model: "DeepSeek: R1 0528 (free)",
-        }),
-      });
-      const data = await res.json();
-      document.getElementById("chat").value += "Du: " + input + "\nKI: " + data.choices[0].message.content + "\n";
+      const frage = input.value.trim();
+      if (!frage) return;
+
+      zeigeNachricht("Du", frage, "user");
+      input.value = "";
+      button.disabled = true;
+
+      try {
+        const res = await fetch("https://new-chatbot-olive.vercel.app/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "DeepSeek: R1 0528 (free)",
+            messages: [{ role: "user", content: frage }],
+          }),
+        });
+
+        const data = await res.json();
+        const antwort = data.choices?.[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
+        zeigeNachricht("Nemo", antwort, "bot");
+      } catch (error) {
+        zeigeNachricht("Fehler", "⚠️ Netzwerkproblem oder Proxy nicht erreichbar.", "bot");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function zeigeNachricht(name, text, klasse) {
+      const div = document.createElement("div");
+      div.className = `nachricht ${klasse}`;
+      div.innerHTML = `<strong>${name}:</strong> ${text}`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
   </script>
 </body>
