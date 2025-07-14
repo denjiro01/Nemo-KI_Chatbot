@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: model || "DeepSeek: R1 0528 (free)",
+      model: model || "deepseek/deepseek-chat-v3-0324:free",
       messages,
     }),
   });
