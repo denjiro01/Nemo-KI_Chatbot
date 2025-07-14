@@ -13,7 +13,7 @@
   <script>
     async function senden() {
       const input = document.getElementById("userInput").value;
-      const res = await fetch("https://deine-vercel-url.vercel.app/api/chat", {
+      const res = await fetch("https://new-chatbot-olive.vercel.app/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
