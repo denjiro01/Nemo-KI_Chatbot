@@ -11,7 +11,6 @@ export default async function handler(req, res) {
   };
 
   const fullMessages = [
-    // Falls vom Frontend schon ein system-Prompt gesendet wird, ersetze ihn
     ...(messages[0]?.role === "system" ? [] : [systemMessage]),
     ...messages,
   ];
@@ -27,6 +26,17 @@ export default async function handler(req, res) {
       messages: fullMessages,
     }),
   });
+
+  // ✅ Füge hier den Rate-Limit-Check ein
+  if (response.status === 429) {
+    return res.status(429).json({
+      choices: [{
+        message: {
+          content: "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen oder lade Guthaben auf unter https://openrouter.ai/wallet."
+        }
+      }]
+    });
+  }
 
   const result = await response.json();
   res.status(200).json(result);
