@@ -90,7 +90,7 @@
   </style>
 </head>
 <body>
-  <header>🤖 Nemo KI-Chat (Fehlerfrei)</header>
+  <header>🤖 Nemo KI-Chat </header>
 
   <div id="chatBox"></div>
 
@@ -140,7 +140,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "DeepSeek: R1 0528 (free)", // ggf. anpassen
+            model: "deepseek-chat", // ggf. anpassen
             messages: [{ role: "user", content: frage }]
           }),
           signal: controller.signal
