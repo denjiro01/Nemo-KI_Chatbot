@@ -3,7 +3,6 @@ export default async function handler(req, res) {
 
   const { messages, model } = req.body;
 
-  // Stelle sicher, dass immer ein System-Prompt mit <think> verwendet wird
   const systemMessage = {
     role: "system",
     content:
@@ -15,29 +14,53 @@ export default async function handler(req, res) {
     ...messages,
   ];
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + process.env.OPENROUTER_API_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: model || "deepseek/deepseek-chat-v3-0324:free",
-      messages: fullMessages,
-    }),
-  });
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + process.env.OPENROUTER_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: model || "deepseek/deepseek-chat-v3-0324:free",
+        messages: fullMessages,
+      }),
+    });
 
-  // ✅ Füge hier den Rate-Limit-Check ein
-  if (response.status === 429) {
-    return res.status(429).json({
+    // 🛑 Wenn zu viele Anfragen → gib Hinweis
+    if (response.status === 429) {
+      return res.status(429).json({
+        choices: [{
+          message: {
+            content: "⚠️ Du hast das tägliche Limit erreicht. Bitte versuche es morgen erneut oder lade Guthaben auf unter https://openrouter.ai/wallet.",
+          }
+        }]
+      });
+    }
+
+    // 🛑 Wenn andere Fehler (z. B. 500, 403)
+    if (!response.ok) {
+      return res.status(response.status).json({
+        choices: [{
+          message: {
+            content: `⚠️ Fehler bei der Anfrage: ${response.status} ${response.statusText}`
+          }
+        }]
+      });
+    }
+
+    // ✅ Alles okay → parse Antwort und sende zurück
+    const result = await response.json();
+    return res.status(200).json(result);
+
+  } catch (error) {
+    // 🔥 Netzwerk- oder Parsingfehler
+    return res.status(500).json({
       choices: [{
         message: {
-          content: "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen oder lade Guthaben auf unter https://openrouter.ai/wallet."
+          content: `⚠️ Interner Fehler: ${error.message}`
         }
       }]
     });
   }
-
-  const result = await response.json();
-  res.status(200).json(result);
 }
