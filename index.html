@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nemo — Dein persönlicher KI-Chatbot</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap');
     * { box-sizing: border-box; }
@@ -43,9 +42,6 @@
       gap: 1rem;
       scrollbar-width: thin;
       scrollbar-color: #00fff7 #000000;
-      font-size: 1.1rem;
-      line-height: 1.5;
-      color: #b3f9f7;
     }
     .chat-messages::-webkit-scrollbar {
       width: 8px;
@@ -53,33 +49,6 @@
     .chat-messages::-webkit-scrollbar-thumb {
       background-color: #00fff7;
       border-radius: 10px;
-    }
-    .chat-messages h1, h2, h3 {
-      color: #00fff7;
-      margin: 0.6rem 0 0.3rem;
-      font-size: 1.2rem;
-      border-bottom: 1px solid #00fff7;
-      padding-bottom: 0.2rem;
-    }
-    .chat-messages ul, ol {
-      margin: 0.5rem 0 0.5rem 1.2rem;
-      padding-left: 1.2rem;
-    }
-    .chat-messages table {
-      border-collapse: collapse;
-      margin-top: 0.5rem;
-      width: 100%;
-      font-size: 0.95rem;
-      background: #001b2b;
-      box-shadow: 0 0 10px #00fff777;
-    }
-    .chat-messages th, .chat-messages td {
-      border: 1px solid #00fff7;
-      padding: 0.6rem;
-      text-align: left;
-    }
-    .chat-messages tr:nth-child(even) {
-      background-color: #002233;
     }
     .message {
       max-width: 75%;
@@ -92,32 +61,27 @@
       animation: fadeIn 0.5s ease forwards;
     }
     .message.user {
-      background: linear-gradient(135deg, #002233, #004466);
+      background: #002233;
       align-self: flex-end;
       border-bottom-right-radius: 4px;
-      color: #7defff;
-      box-shadow: 0 0 10px #00c4c1cc;
+      color: #00fff7;
       text-shadow: 0 0 2px #00fff7aa;
     }
     .message.bot {
-      background: linear-gradient(135deg, #004455, #006677);
+      background: #004455;
       align-self: flex-start;
       border-bottom-left-radius: 4px;
-      color: #d1faff;
-      box-shadow: 0 0 10px #00fff7cc;
+      color: #aaffff;
       text-shadow: 0 0 2px #aaffffaa;
     }
     .loading {
-      width: 32px;
-      height: 32px;
-      border: 4px solid transparent;
-      border-top: 4px solid #00fff7;
+      width: 24px;
+      height: 24px;
+      border: 3px solid transparent;
+      border-top: 3px solid #00fff7;
       border-radius: 50%;
-      animation: spin 1.2s linear infinite;
-      margin-left: 15px;
-      filter: drop-shadow(0 0 5px #00fff7);
-      display: inline-block;
-      vertical-align: middle;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
     }
     .input-area {
       display: flex;
@@ -137,47 +101,30 @@
       font-family: 'Roboto', sans-serif;
       background: #002233;
       color: #00fff7;
-      box-shadow: inset 0 0 15px #00fff7aa;
+      box-shadow: inset 0 0 10px #00fff7aa;
       outline: none;
       transition: box-shadow 0.3s ease;
       height: 3.5rem;
       line-height: 1.2;
     }
     textarea:focus {
-      box-shadow: 0 0 25px #00fff7;
+      box-shadow: 0 0 15px #00fff7;
     }
     button {
       margin-left: 1rem;
-      background: linear-gradient(135deg, #00fff7, #00c4c1);
+      background: #00fff7;
       border: none;
-      border-radius: 20px;
-      padding: 0.5rem 1.2rem;
+      border-radius: 12px;
+      padding: 0 1.5rem;
       font-size: 1.1rem;
       font-weight: 700;
       color: #001122;
       cursor: pointer;
       box-shadow: 0 0 15px #00fff7;
-      transition: box-shadow 0.3s ease, transform 0.2s ease;
+      transition: background 0.3s ease;
     }
     button:hover {
-      box-shadow: 0 0 25px #00fff7ff;
-      transform: scale(1.05);
-    }
-    .toggle-btn {
-      margin-top: 0.7rem;
-      background: linear-gradient(135deg, #00fff7, #00c4c1);
-      color: #001122;
-      padding: 0.5rem 1rem;
-      font-size: 0.95rem;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      box-shadow: 0 0 12px #00fff7aa;
-      transition: box-shadow 0.3s ease, transform 0.2s ease;
-    }
-    .toggle-btn:hover {
-      box-shadow: 0 0 25px #00fff7ff;
-      transform: scale(1.05);
+      background: #00c4c1;
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
@@ -185,19 +132,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeZoomIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-    .gedanken-visible {
-      animation: fadeZoomIn 0.3s ease forwards;
     }
   </style>
 </head>
@@ -211,133 +145,130 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs/prism.min.js"></script>
-  <script>
-    const chatMessages = document.getElementById('chatMessages');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
+<script>
+  const chatMessages = document.getElementById('chatMessages');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
 
-    function scrollToBottom() {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+  function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
-    function showLoading() {
-      const loadingDiv = document.createElement('div');
-      loadingDiv.classList.add('message', 'bot');
-      loadingDiv.id = 'loading';
-      loadingDiv.innerHTML = 'Nemo tippt<span class="loading"></span>';
-      chatMessages.appendChild(loadingDiv);
-      scrollToBottom();
-    }
+  function showLoading() {
+    const loadingDiv = document.createElement('div');
+    loadingDiv.classList.add('message', 'bot');
+    loadingDiv.id = 'loading';
+    loadingDiv.innerHTML = 'Nemo tippt<span class="loading"></span>';
+    chatMessages.appendChild(loadingDiv);
+    scrollToBottom();
+  }
 
-    function removeLoading() {
-      const loadingDiv = document.getElementById('loading');
-      if (loadingDiv) loadingDiv.remove();
-    }
+  function removeLoading() {
+    const loadingDiv = document.getElementById('loading');
+    if (loadingDiv) loadingDiv.remove();
+  }
 
-    async function frageDeepSeek(text) {
-      if (!text.trim()) return;
+  async function frageDeepSeek(text) {
+    if (!text.trim()) return;
 
-      const userMsg = document.createElement('div');
-      userMsg.classList.add('message', 'user');
-      userMsg.textContent = text;
-      chatMessages.appendChild(userMsg);
-      scrollToBottom();
+    const userMsg = document.createElement('div');
+    userMsg.classList.add('message', 'user');
+    userMsg.textContent = text;
+    chatMessages.appendChild(userMsg);
+    scrollToBottom();
 
-      showLoading();
+    showLoading();
 
-      try {
-        const response = await fetch("https://nemo-ki.vercel.app/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "deepseek/deepseek-chat-v3-0324:free",
-            messages: [
-              { role: "system", content: "Du bist ein hilfreicher, freundlicher deutscher Assistent." },
-              { role: "user", content: text }
-            ],
-          }),
-        });
+    try {
+      const response = await fetch("https://new-chatbot-olive.vercel.app/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "deepseek/deepseek-r1-0528:free",
+          messages: [
+            { role: "system", content: "Du bist ein hilfreicher, freundlicher deutscher Assistent." },
+            { role: "user", content: text }
+          ],
+        }),
+      });
 
-        if (!response.ok) throw new Error(`Fehler: ${response.status} ${response.statusText}`);
-        const data = await response.json();
+      if (!response.ok) throw new Error(`Fehler: ${response.status} ${response.statusText}`);
+      const data = await response.json();
 
-        removeLoading();
+      removeLoading();
 
-        const fullText = data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
-        const botMsg = document.createElement('div');
-        botMsg.classList.add('message', 'bot');
+      const fullText = data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
+      const botMsg = document.createElement('div');
+      botMsg.classList.add('message', 'bot');
 
-        const thinkMatch = fullText.match(/<think>([\s\S]*?)<\/think>/i);
-        const sichtbarerText = fullText.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+      const thinkMatch = fullText.match(/<think>([\s\S]*?)<\/think>/i);
+      const sichtbarerText = fullText.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+
+      if (thinkMatch) {
+        const gedankenText = thinkMatch[1].trim();
 
         const antwortDiv = document.createElement('div');
-        antwortDiv.innerHTML = marked.parse(sichtbarerText);
-        Prism.highlightAll();
+        antwortDiv.textContent = sichtbarerText;
 
-        if (thinkMatch) {
-          const gedankenText = thinkMatch[1].trim();
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = "🧠 Gedanken anzeigen";
+        toggleBtn.style.marginTop = "0.7rem";
+        toggleBtn.style.background = "#00c4c1";
+        toggleBtn.style.color = "#001122";
+        toggleBtn.style.padding = "0.4rem 0.8rem";
+        toggleBtn.style.fontSize = "0.9rem";
+        toggleBtn.style.border = "none";
+        toggleBtn.style.borderRadius = "8px";
+        toggleBtn.style.cursor = "pointer";
 
-          const toggleBtn = document.createElement('button');
-          toggleBtn.classList.add('toggle-btn');
-          toggleBtn.textContent = "🧠 Gedanken anzeigen";
+        const gedankenDiv = document.createElement('div');
+        gedankenDiv.textContent = gedankenText;
+        gedankenDiv.style.display = "none";
+        gedankenDiv.style.marginTop = "0.5rem";
+        gedankenDiv.style.fontStyle = "italic";
+        gedankenDiv.style.background = "#002233";
+        gedankenDiv.style.padding = "0.6rem 1rem";
+        gedankenDiv.style.borderRadius = "12px";
+        gedankenDiv.style.boxShadow = "inset 0 0 6px #00fff7aa";
 
-          const gedankenDiv = document.createElement('div');
-          gedankenDiv.textContent = gedankenText;
-          gedankenDiv.style.display = "none";
-          gedankenDiv.style.marginTop = "0.5rem";
-          gedankenDiv.style.fontStyle = "italic";
-          gedankenDiv.style.background = "#002233";
-          gedankenDiv.style.padding = "0.6rem 1rem";
-          gedankenDiv.style.borderRadius = "12px";
-          gedankenDiv.style.boxShadow = "inset 0 0 6px #00fff7aa";
+        toggleBtn.onclick = () => {
+          const sichtbar = gedankenDiv.style.display === "block";
+          gedankenDiv.style.display = sichtbar ? "none" : "block";
+          toggleBtn.textContent = sichtbar ? "🧠 Gedanken anzeigen" : "🧠 Gedanken ausblenden";
+        };
 
-          toggleBtn.onclick = () => {
-            const sichtbar = gedankenDiv.style.display === "block";
-            if (sichtbar) {
-              gedankenDiv.style.display = "none";
-              gedankenDiv.classList.remove("gedanken-visible");
-              toggleBtn.textContent = "🧠 Gedanken anzeigen";
-            } else {
-              gedankenDiv.style.display = "block";
-              gedankenDiv.classList.add("gedanken-visible");
-              toggleBtn.textContent = "🧠 Gedanken ausblenden";
-            }
-          };
-
-          botMsg.appendChild(antwortDiv);
-          botMsg.appendChild(toggleBtn);
-          botMsg.appendChild(gedankenDiv);
-        } else {
-          botMsg.appendChild(antwortDiv);
-        }
-
-        chatMessages.appendChild(botMsg);
-        scrollToBottom();
-
-      } catch (error) {
-        removeLoading();
-        const errMsg = document.createElement('div');
-        errMsg.classList.add('message', 'bot');
-        errMsg.textContent = "Fehler bei der Anfrage: " + error.message;
-        chatMessages.appendChild(errMsg);
-        scrollToBottom();
+        botMsg.appendChild(antwortDiv);
+        botMsg.appendChild(toggleBtn);
+        botMsg.appendChild(gedankenDiv);
+      } else {
+        botMsg.textContent = fullText;
       }
+
+      chatMessages.appendChild(botMsg);
+      scrollToBottom();
+
+    } catch (error) {
+      removeLoading();
+      const errMsg = document.createElement('div');
+      errMsg.classList.add('message', 'bot');
+      errMsg.textContent = "Fehler bei der Anfrage: " + error.message;
+      chatMessages.appendChild(errMsg);
+      scrollToBottom();
     }
+  }
 
-    sendBtn.addEventListener('click', () => {
-      frageDeepSeek(userInput.value);
-      userInput.value = '';
-      userInput.focus();
-    });
+  sendBtn.addEventListener('click', () => {
+    frageDeepSeek(userInput.value);
+    userInput.value = '';
+    userInput.focus();
+  });
 
-    userInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendBtn.click();
-      }
-    });
-  </script>
+  userInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendBtn.click();
+    }
+  });
+</script>
 </body>
 </html>
