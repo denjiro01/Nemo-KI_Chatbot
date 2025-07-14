@@ -1,87 +1,61 @@
-try {
-  const response = await fetch("https://nemo-ki-chatbot-new.vercel.app/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "deepseek/deepseek-chat-v3-0324:free",
-      messages: [
-        { role: "system", content: "Du bist ein hilfreicher, freundlicher deutscher Assistent." },
-        { role: "user", content: text }
-      ],
-    }),
-  });
-
-  // Bei 429-Fehler spezielle Nachricht anzeigen
-  if (response.status === 429) {
-    removeLoading();
-    const botMsg = document.createElement('div');
-    botMsg.classList.add('message', 'bot');
-    botMsg.textContent = "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen oder lade Guthaben auf unter https://openrouter.ai/wallet.";
-    chatMessages.appendChild(botMsg);
-    scrollToBottom();
-    return;
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Nur POST-Anfragen erlaubt" });
   }
 
-  const data = await response.json();
-  removeLoading();
+  try {
+    const { model, messages } = req.body;
 
-  const fullText = data.choices?.[0]?.message?.content || "⚠️ Keine gültige Antwort erhalten.";
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Keine oder ungültige Nachrichten vorhanden" });
+    }
 
-  const botMsg = document.createElement('div');
-  botMsg.classList.add('message', 'bot');
-
-  const thinkMatch = fullText.match(/<think>([\s\S]*?)<\/think>/i);
-  const sichtbarerText = fullText.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
-
-  const antwortDiv = document.createElement('div');
-  antwortDiv.innerHTML = marked.parse(sichtbarerText);
-  Prism.highlightAll();
-
-  if (thinkMatch) {
-    const gedankenText = thinkMatch[1].trim();
-
-    const toggleBtn = document.createElement('button');
-    toggleBtn.classList.add('toggle-btn');
-    toggleBtn.textContent = "🧠 Gedanken anzeigen";
-
-    const gedankenDiv = document.createElement('div');
-    gedankenDiv.textContent = gedankenText;
-    gedankenDiv.style.display = "none";
-    gedankenDiv.style.marginTop = "0.5rem";
-    gedankenDiv.style.fontStyle = "italic";
-    gedankenDiv.style.background = "#002233";
-    gedankenDiv.style.padding = "0.6rem 1rem";
-    gedankenDiv.style.borderRadius = "12px";
-    gedankenDiv.style.boxShadow = "inset 0 0 6px #00fff7aa";
-
-    toggleBtn.onclick = () => {
-      const sichtbar = gedankenDiv.style.display === "block";
-      if (sichtbar) {
-        gedankenDiv.style.display = "none";
-        gedankenDiv.classList.remove("gedanken-visible");
-        toggleBtn.textContent = "🧠 Gedanken anzeigen";
-      } else {
-        gedankenDiv.style.display = "block";
-        gedankenDiv.classList.add("gedanken-visible");
-        toggleBtn.textContent = "🧠 Gedanken ausblenden";
-      }
+    // Setze System-Message, falls noch nicht vorhanden
+    const systemMessage = {
+      role: "system",
+      content: "Du bist ein hilfreicher, freundlicher deutscher Assistent.",
     };
 
-    botMsg.appendChild(antwortDiv);
-    botMsg.appendChild(toggleBtn);
-    botMsg.appendChild(gedankenDiv);
-  } else {
-    botMsg.appendChild(antwortDiv);
+    const fullMessages = messages.some(m => m.role === "system")
+      ? messages
+      : [systemMessage, ...messages];
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: model || "deepseek/deepseek-chat-v3-0324:free",
+        messages: fullMessages,
+      }),
+    });
+
+    // 429 Fehler speziell behandeln und weitergeben
+    if (response.status === 429) {
+      return res.status(429).json({
+        choices: [{
+          message: {
+            content: "⚠️ Du hast das tägliche Limit erreicht. Bitte warte bis morgen oder lade Guthaben auf unter https://openrouter.ai/wallet."
+          }
+        }]
+      });
+    }
+
+    // Andere Fehler abfangen
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Fehler von OpenRouter:", response.status, errorText);
+      return res.status(response.status).json({ error: errorText });
+    }
+
+    // Antwort normal weiterleiten
+    const data = await response.json();
+    res.status(200).json(data);
+
+  } catch (error) {
+    console.error("Interner Serverfehler:", error);
+    res.status(500).json({ error: error.message || "Unbekannter Serverfehler" });
   }
-
-  chatMessages.appendChild(botMsg);
-  scrollToBottom();
-
-} catch (error) {
-  removeLoading();
-  const errMsg = document.createElement('div');
-  errMsg.classList.add('message', 'bot');
-  errMsg.textContent = "⚠️ Netzwerkfehler oder ungültige Antwort: " + error.message;
-  chatMessages.appendChild(errMsg);
-  scrollToBottom();
 }
