@@ -140,7 +140,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "deepseek-chat", // ggf. anpassen
+            model: "deepseek/deepseek-r1-0528:free", // ggf. anpassen
             messages: [{ role: "user", content: frage }]
           }),
           signal: controller.signal
