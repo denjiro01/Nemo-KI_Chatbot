@@ -1,9 +1,6 @@
 {
-  "choices": [
-    {
-      "message": {
-        "content": "Antworttext hier"
-      }
-    }
+  "version": 2,
+  "routes": [
+    { "src": "/api/chat", "dest": "api/chat.js" }
   ]
 }
