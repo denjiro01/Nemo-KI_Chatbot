@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mein KI-Chatbot</title>
+</head>
+<body>
+  <h1>Sprich mit mir</h1>
+  <textarea id="chat" rows="10" cols="50" readonly></textarea><br>
+  <input type="text" id="userInput" placeholder="Frag mich etwas..." />
+  <button onclick="senden()">Senden</button>
+
+  <script>
+    async function senden() {
+      const input = document.getElementById("userInput").value;
+      const res = await fetch("https://deine-vercel-url.vercel.app/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: input }],
+          model: "deepseek-chat",
+        }),
+      });
+      const data = await res.json();
+      document.getElementById("chat").value += "Du: " + input + "\nKI: " + data.choices[0].message.content + "\n";
+    }
+  </script>
+</body>
+</html>
