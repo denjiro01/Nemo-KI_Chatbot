@@ -87,6 +87,7 @@
       position: relative;
       box-shadow: 0 0 6px #00fff7aa;
       animation: fadeIn 0.5s ease forwards;
+      word-wrap: break-word;
     }
     .message.user {
       background: #002233;
@@ -198,19 +199,10 @@
       if (loadingDiv) loadingDiv.remove();
     }
 
-    function animateText(element, text) {
-      let i = 0;
-      const speed = 10;
-      const interval = setInterval(() => {
-        element.innerHTML += text.charAt(i);
-        i++;
-        if (i >= text.length) clearInterval(interval);
-      }, speed);
-    }
-
     async function frageDeepSeek(text) {
       if (!text.trim()) return;
 
+      // Nutzernachricht anzeigen
       const userMsg = document.createElement('div');
       userMsg.classList.add('message', 'user');
       userMsg.textContent = text;
@@ -241,16 +233,27 @@
         const botMsg = document.createElement('div');
         botMsg.classList.add('message', 'bot');
 
-        const thinkMatch = fullText.match(/<think>([\s\S]*?)<\/think>/i);
-        const sichtbarerText = fullText.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+        // Alle <think>...</think> Blöcke extrahieren
+        const thinkRegex = /<think>([\s\S]*?)<\/think>/gi;
+        let match;
+        let gedankenTexte = [];
 
+        let sichtbarerText = fullText;
+        while ((match = thinkRegex.exec(fullText)) !== null) {
+          gedankenTexte.push(match[1].trim());
+          sichtbarerText = sichtbarerText.replace(match[0], '');
+        }
+        sichtbarerText = sichtbarerText.trim();
+
+        // Sichtbaren Text mit Markdown parsen
         const antwortDiv = document.createElement('div');
         antwortDiv.innerHTML = marked.parse(sichtbarerText);
         Prism.highlightAll();
 
-        if (thinkMatch) {
-          const gedankenText = thinkMatch[1].trim();
+        botMsg.appendChild(antwortDiv);
 
+        // Gedanken-Bereich mit Button, wenn Gedanken vorhanden
+        if (gedankenTexte.length > 0) {
           const toggleBtn = document.createElement('button');
           toggleBtn.textContent = "🧠 Gedanken anzeigen";
           toggleBtn.style.marginTop = "0.7rem";
@@ -263,7 +266,6 @@
           toggleBtn.style.cursor = "pointer";
 
           const gedankenDiv = document.createElement('div');
-          gedankenDiv.textContent = gedankenText;
           gedankenDiv.style.display = "none";
           gedankenDiv.style.marginTop = "0.5rem";
           gedankenDiv.style.fontStyle = "italic";
@@ -271,6 +273,14 @@
           gedankenDiv.style.padding = "0.6rem 1rem";
           gedankenDiv.style.borderRadius = "12px";
           gedankenDiv.style.boxShadow = "inset 0 0 6px #00fff7aa";
+          gedankenDiv.style.whiteSpace = "pre-wrap";
+
+          gedankenTexte.forEach((text, i) => {
+            const p = document.createElement('p');
+            p.textContent = text;
+            if (i > 0) p.style.marginTop = "0.8rem";
+            gedankenDiv.appendChild(p);
+          });
 
           toggleBtn.onclick = () => {
             const sichtbar = gedankenDiv.style.display === "block";
@@ -278,11 +288,8 @@
             toggleBtn.textContent = sichtbar ? "🧠 Gedanken anzeigen" : "🧠 Gedanken ausblenden";
           };
 
-          botMsg.appendChild(antwortDiv);
           botMsg.appendChild(toggleBtn);
           botMsg.appendChild(gedankenDiv);
-        } else {
-          botMsg.appendChild(antwortDiv);
         }
 
         chatMessages.appendChild(botMsg);
