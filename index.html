@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nemo — Dein KI-Chatbot</title>
+  <title>Nemo — Dein persönlicher KI-Chatbot</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.min.css" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap');
@@ -20,13 +20,15 @@
     }
     h1 {
       font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
       color: #00fff7;
-      margin: 1rem 0 0.5rem;
+      margin: 1rem 0 0.5rem 0;
     }
     .chat-container {
       background: #111122;
       border-radius: 16px;
-      width: 90%; max-width: 720px;
+      width: 90%;
+      max-width: 720px;
       height: 75vh;
       display: flex;
       flex-direction: column;
@@ -100,11 +102,11 @@
   </style>
 </head>
 <body>
-  <h1>Nemo — Dein KI-Chatbot</h1>
+  <h1>Nemo — Dein persönlicher KI-Chatbot</h1>
   <div class="chat-container">
     <div id="chatMessages" class="chat-messages"></div>
     <div class="input-area">
-      <textarea id="userInput" placeholder="Frag mich etwas..."></textarea>
+      <textarea id="userInput" placeholder="Frag mich etwas..." rows="1"></textarea>
       <button id="sendBtn">Senden</button>
     </div>
   </div>
