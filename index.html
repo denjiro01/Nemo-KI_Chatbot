@@ -1,148 +1,139 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nemo — Dein persönlicher KI-Chatbot</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap');
-
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    margin: 0; padding: 0;
-    background: linear-gradient(135deg, #0f0f3f, #000000);
-    font-family: 'Roboto', sans-serif;
-    color: #00fff7;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  h1 {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 700;
-    color: #00fff7;
-    margin: 1rem 0 0.5rem 0;
-  }
-
-  .chat-container {
-    background: #111122;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 720px;
-    height: 75vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 0 20px #00fff7aa;
-  }
-
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    scrollbar-width: thin;
-    scrollbar-color: #00fff7 #000000;
-  }
-  .chat-messages::-webkit-scrollbar {
-    width: 8px;
-  }
-  .chat-messages::-webkit-scrollbar-thumb {
-    background-color: #00fff7;
-    border-radius: 10px;
-  }
-
-  .message {
-    max-width: 75%;
-    padding: 1rem 1.2rem;
-    border-radius: 20px;
-    font-size: 1rem;
-    line-height: 1.3;
-    position: relative;
-    box-shadow: 0 0 6px #00fff7aa;
-    animation: fadeIn 0.5s ease forwards;
-  }
-  .message.user {
-    background: #002233;
-    align-self: flex-end;
-    border-bottom-right-radius: 4px;
-    color: #00fff7;
-    text-shadow: 0 0 2px #00fff7aa;
-  }
-  .message.bot {
-    background: #004455;
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
-    color: #aaffff;
-    text-shadow: 0 0 2px #aaffffaa;
-  }
-
-  .loading {
-    width: 24px;
-    height: 24px;
-    border: 3px solid transparent;
-    border-top: 3px solid #00fff7;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-left: 10px;
-  }
-
-  .input-area {
-    display: flex;
-    padding: 1rem 1.5rem;
-    background: #001122;
-    border-top: 1px solid #004455;
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-  }
-  textarea {
-    flex: 1;
-    resize: none;
-    border: none;
-    border-radius: 12px;
-    padding: 1rem;
-    font-size: 1rem;
-    font-family: 'Roboto', sans-serif;
-    background: #002233;
-    color: #00fff7;
-    box-shadow: inset 0 0 10px #00fff7aa;
-    outline: none;
-    transition: box-shadow 0.3s ease;
-    height: 3.5rem;
-    line-height: 1.2;
-  }
-  textarea:focus {
-    box-shadow: 0 0 15px #00fff7;
-  }
-  button {
-    margin-left: 1rem;
-    background: #00fff7;
-    border: none;
-    border-radius: 12px;
-    padding: 0 1.5rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #001122;
-    cursor: pointer;
-    box-shadow: 0 0 15px #00fff7;
-    transition: background 0.3s ease;
-  }
-  button:hover {
-    background: #00c4c1;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg);}
-  }
-  @keyframes fadeIn {
-    from {opacity: 0; transform: translateY(10px);}
-    to {opacity: 1; transform: translateY(0);}
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nemo — Dein persönlicher KI-Chatbot</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      background: linear-gradient(135deg, #0f0f3f, #000000);
+      font-family: 'Roboto', sans-serif;
+      color: #00fff7;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      color: #00fff7;
+      margin: 1rem 0 0.5rem 0;
+    }
+    .chat-container {
+      background: #111122;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 720px;
+      height: 75vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px #00fff7aa;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: #00fff7 #000000;
+    }
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background-color: #00fff7;
+      border-radius: 10px;
+    }
+    .message {
+      max-width: 75%;
+      padding: 1rem 1.2rem;
+      border-radius: 20px;
+      font-size: 1rem;
+      line-height: 1.3;
+      position: relative;
+      box-shadow: 0 0 6px #00fff7aa;
+      animation: fadeIn 0.5s ease forwards;
+    }
+    .message.user {
+      background: #002233;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      color: #00fff7;
+      text-shadow: 0 0 2px #00fff7aa;
+    }
+    .message.bot {
+      background: #004455;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+      color: #aaffff;
+      text-shadow: 0 0 2px #aaffffaa;
+    }
+    .loading {
+      width: 24px;
+      height: 24px;
+      border: 3px solid transparent;
+      border-top: 3px solid #00fff7;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    .input-area {
+      display: flex;
+      padding: 1rem 1.5rem;
+      background: #001122;
+      border-top: 1px solid #004455;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+    textarea {
+      flex: 1;
+      resize: none;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1rem;
+      font-family: 'Roboto', sans-serif;
+      background: #002233;
+      color: #00fff7;
+      box-shadow: inset 0 0 10px #00fff7aa;
+      outline: none;
+      transition: box-shadow 0.3s ease;
+      height: 3.5rem;
+      line-height: 1.2;
+    }
+    textarea:focus {
+      box-shadow: 0 0 15px #00fff7;
+    }
+    button {
+      margin-left: 1rem;
+      background: #00fff7;
+      border: none;
+      border-radius: 12px;
+      padding: 0 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #001122;
+      cursor: pointer;
+      box-shadow: 0 0 15px #00fff7;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #00c4c1;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
   <h1>Nemo — Dein persönlicher KI-Chatbot</h1>
@@ -171,6 +162,7 @@
     chatMessages.appendChild(loadingDiv);
     scrollToBottom();
   }
+
   function removeLoading() {
     const loadingDiv = document.getElementById('loading');
     if (loadingDiv) loadingDiv.remove();
@@ -179,7 +171,6 @@
   async function frageDeepSeek(text) {
     if (!text.trim()) return;
 
-    // User Nachricht anzeigen
     const userMsg = document.createElement('div');
     userMsg.classList.add('message', 'user');
     userMsg.textContent = text;
@@ -189,7 +180,7 @@
     showLoading();
 
     try {
-      const response = await fetch("https://new-chatbot-olive.vercel.app/api/chat", {  // <- hier deinen Proxy-Link einsetzen
+      const response = await fetch("https://new-chatbot-olive.vercel.app/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -206,9 +197,53 @@
 
       removeLoading();
 
+      const fullText = data.choices[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
       const botMsg = document.createElement('div');
       botMsg.classList.add('message', 'bot');
-      botMsg.textContent = data.choices[0].message.content;
+
+      const thinkMatch = fullText.match(/<think>([\s\S]*?)<\/think>/i);
+      const sichtbarerText = fullText.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+
+      if (thinkMatch) {
+        const gedankenText = thinkMatch[1].trim();
+
+        const antwortDiv = document.createElement('div');
+        antwortDiv.textContent = sichtbarerText;
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.textContent = "🧠 Gedanken anzeigen";
+        toggleBtn.style.marginTop = "0.7rem";
+        toggleBtn.style.background = "#00c4c1";
+        toggleBtn.style.color = "#001122";
+        toggleBtn.style.padding = "0.4rem 0.8rem";
+        toggleBtn.style.fontSize = "0.9rem";
+        toggleBtn.style.border = "none";
+        toggleBtn.style.borderRadius = "8px";
+        toggleBtn.style.cursor = "pointer";
+
+        const gedankenDiv = document.createElement('div');
+        gedankenDiv.textContent = gedankenText;
+        gedankenDiv.style.display = "none";
+        gedankenDiv.style.marginTop = "0.5rem";
+        gedankenDiv.style.fontStyle = "italic";
+        gedankenDiv.style.background = "#002233";
+        gedankenDiv.style.padding = "0.6rem 1rem";
+        gedankenDiv.style.borderRadius = "12px";
+        gedankenDiv.style.boxShadow = "inset 0 0 6px #00fff7aa";
+
+        toggleBtn.onclick = () => {
+          const sichtbar = gedankenDiv.style.display === "block";
+          gedankenDiv.style.display = sichtbar ? "none" : "block";
+          toggleBtn.textContent = sichtbar ? "🧠 Gedanken anzeigen" : "🧠 Gedanken ausblenden";
+        };
+
+        botMsg.appendChild(antwortDiv);
+        botMsg.appendChild(toggleBtn);
+        botMsg.appendChild(gedankenDiv);
+      } else {
+        botMsg.textContent = fullText;
+      }
+
       chatMessages.appendChild(botMsg);
       scrollToBottom();
 
@@ -227,6 +262,7 @@
     userInput.value = '';
     userInput.focus();
   });
+
   userInput.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
