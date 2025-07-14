@@ -107,6 +107,7 @@
         });
 
         const data = await res.json();
+console.log("Antwort der API:", data);
         const antwort = data.choices?.[0]?.message?.content || "⚠️ Keine Antwort erhalten.";
         zeigeNachricht("Nemo", antwort, "bot");
       } catch (error) {
